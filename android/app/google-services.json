@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "26960097404",
+    "project_id": "fir-tas-6b9e7",
+    "storage_bucket": "fir-tas-6b9e7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:26960097404:android:db8f5fa5373cbaf5a619f9",
+        "android_client_info": {
+          "package_name": "com.example.heart_monitor_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7abagZlcinNUAwphy4cLxSVwMtNZal4o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

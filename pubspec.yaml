@@ -1,0 +1,43 @@
+# --- Project metadata ---
+name: heart_monitor_app              # Your app's name
+description: A Flutter app to predict heart attack risk
+version: 1.0.0+1                     # Version + build number
+
+# --- Dart SDK compatibility ---
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+# --- Dependencies (things your app needs to run) ---
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase core (must-have for any Firebase feature)
+  firebase_core: ^3.6.0
+
+  # Firebase authentication (sign in / sign up / reset password)
+  firebase_auth: ^5.3.1
+
+  # Firestore (database for storing health data, user history, etc.)
+  cloud_firestore: ^5.4.3
+
+  # TensorFlow Lite for running your ML model on-device
+  tflite_flutter: ^0.10.4
+
+  # State management (helps organize app state)
+  provider: ^6.0.5
+
+# --- Development-only dependencies (for tests) ---
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+# --- Flutter-specific config ---
+flutter:
+  # Include Material icons + themes
+  uses-material-design: true
+
+  # List your bundled assets here (images, fonts, ML models)
+  assets:
+    - assets/logo.png
+  #- assets/models/heart_model.tflite

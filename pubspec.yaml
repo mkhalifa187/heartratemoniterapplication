@@ -9,6 +9,7 @@ environment:
 
 # --- Dependencies (things your app needs to run) ---
 dependencies:
+  flutter_dotenv: ^6.0.0
   flutter:
     sdk: flutter
 

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // <-- added
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // add this
+
 import 'firebase_options.dart';   // <-- must be here
 import 'auth_page.dart';
 import 'home_page.dart';
 
-
-
-
-
-
 // ===== SINGLE main() =====
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load .env before Firebase init
+  await dotenv.load(fileName: ".env"); // <-- added
 
   // Guard so hot restart / re-entry or other files importing this don't double-init
   if (Firebase.apps.isEmpty) {
@@ -23,7 +23,6 @@ Future<void> main() async {
 
   runApp(const MyApp());
 }
-
 
 // ===== APP ROOT =====
 class MyApp extends StatelessWidget {

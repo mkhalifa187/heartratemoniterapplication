@@ -19,7 +19,7 @@ class DefaultFirebaseOptions {
     if (kIsWeb) {
       throw UnsupportedError(
         'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
+            'you can reconfigure this by running the FlutterFire CLI again.',
       );
     }
     switch (defaultTargetPlatform) {
@@ -30,17 +30,17 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
+              'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
+              'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
+              'you can reconfigure this by running the FlutterFire CLI again.',
         );
       default:
         throw UnsupportedError(
@@ -49,20 +49,22 @@ class DefaultFirebaseOptions {
     }
   }
 
+  // ANDROID — matches your google-services.json
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyB7abagZlcinNUAwphy4cLxSVwMtNZal4o',
-    appId: '1:26960097404:android:db8f5fa5373cbaf5a619f9',
-    messagingSenderId: '26960097404',
-    projectId: 'fir-tas-6b9e7',
-    storageBucket: 'fir-tas-6b9e7.firebasestorage.app',
+    apiKey: 'AIzaSyDEvNHn5v-zlGF3s1tvkUT4OqXFuGTUk9I',
+    appId: '1:263684988360:android:4fe8dfbabad80af8e474fd',
+    messagingSenderId: '263684988360',
+    projectId: 'healthappauth-22799',
+    storageBucket: 'healthappauth-22799.firebasestorage.app',
   );
 
+  // iOS — leave as-is (or regenerate for your iOS app if/when you add one)
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAO3979UTlvtmBhko14qsMCrbHgSy4m8RE',
     appId: '1:26960097404:ios:4b87aa5b028a555ca619f9',
     messagingSenderId: '26960097404',
     projectId: 'fir-tas-6b9e7',
-    storageBucket: 'fir-tas-6b9e7.firebasestorage.app',
+    storageBucket: 'healthappauth-22799.firebasestorage.app',
     iosBundleId: 'com.example.heartMonitorApp',
   );
 }

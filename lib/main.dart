@@ -8,16 +8,21 @@ import 'home_page.dart';
 
 
 
+
 // ===== SINGLE main() =====
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,  // <-- uses generated file
-  );
+
+  // Guard so hot restart / re-entry or other files importing this don't double-init
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
+
   runApp(const MyApp());
 }
-
 
 
 // ===== APP ROOT =====

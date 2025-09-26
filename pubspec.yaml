@@ -9,6 +9,7 @@ environment:
 
 # --- Dependencies (things your app needs to run) ---
 dependencies:
+  google_fonts: ^6.3.2   # (latest at time of writing)// needed for gideon roman font
   flutter_dotenv: ^6.0.0
   flutter:
     sdk: flutter
@@ -40,5 +41,14 @@ flutter:
 
   # List your bundled assets here (images, fonts, ML models)
   assets:
+    - assets/fonts/
     - assets/logo.png
+    - .env
   #- assets/models/heart_model.tflite
+
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/GideonRoman-Regular.ttf
+          weight: 900
+

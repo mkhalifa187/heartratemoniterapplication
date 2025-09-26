@@ -1,182 +1,214 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';                 // Like importing Android UI libs
+import 'package:firebase_auth/firebase_auth.dart';      // Firebase Auth SDK (similar to adding a dependency in Java)
 
-// This screen allows users to:
-// - Sign In
-// - Sign Up
-// - Reset their password
+// Stateful screen (like an Android Activity/Fragment with internal state)
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
 
+  // Factory for the State object (think: creates the controller for this UI)
   @override
   State<AuthPage> createState() => _AuthPageState();
 }
 
-// The different modes the screen can show
+// Enum = fixed set of constants (like Java enum)
 enum AuthMode { signIn, signUp, reset }
 
+// This is the "controller" for the widget above; holds fields, lifecycle, and UI building.
+// Comparable to an Activity with member fields and lifecycle methods (onCreate/onDestroy).
 class _AuthPageState extends State<AuthPage> {
-  // A key used to check if the form is valid
+  // Form key = handle to the <Form> widget so we can call validate() like form.validate()
   final _formKey = GlobalKey<FormState>();
 
-  // Text controllers store what the user types
+  // Text controllers = like Java TextWatcher + model in one; they hold current text values.
+  final _fullNameController = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
 
-  // The current mode (default is Sign In)
+  // Current mode (like a screen state flag): sign in / sign up / reset
   AuthMode _mode = AuthMode.signIn;
 
-  // Whether the app is waiting for Firebase (spinner)
+  // Spinner flag (like showing/hiding ProgressBar in Android)
   bool _loading = false;
 
-  // Store error messages here (shown above the form)
+  // For displaying error messages in the UI
   String? _error;
 
   @override
   void dispose() {
-    // Always clean up controllers when done
+    // Lifecycle: called when this UI is permanently removed.
+    // Release resources (like calling close() in Java) to avoid memory leaks.
     _email.dispose();
     _password.dispose();
     _confirm.dispose();
+    _fullNameController.dispose();
     super.dispose();
   }
 
-  // --- Validators (check inputs) ---
+  // ---------------- Validators (similar to input validation in Android TextInputLayout) ----------------
 
-  // Check if email looks correct
+  // Returns a String error message or null if OK (same pattern as many Java validators)
   String? _validateEmail(String? v) {
     if (v == null || v.isEmpty) return 'Email is required';
-    final ok = RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v);
+    final ok = RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v);  // simple regex check
     if (!ok) return 'Enter a valid email';
-    return null;
+    return null; // null => valid
   }
 
-  // Check password rules
   String? _validatePassword(String? v) {
-    if (_mode == AuthMode.reset) return null; // not needed for reset
+    if (_mode == AuthMode.reset) return null;               // no password needed for reset
     if (v == null || v.isEmpty) return 'Password is required';
     if (v.length < 6) return 'Min 6 characters';
     return null;
   }
 
-  // Confirm password must match when signing up
   String? _validateConfirm(String? v) {
-    if (_mode != AuthMode.signUp) return null;
+    if (_mode != AuthMode.signUp) return null;              // confirm only applies to sign up
     if (v != _password.text) return 'Passwords do not match';
     return null;
   }
 
-  // --- Main action button (Sign In / Sign Up / Reset) ---
+  // ---------------- Main action handler (like onClick handler + async Firebase calls) ----------------
   Future<void> _submit() async {
-    // Hide the keyboard
+    // Hide soft keyboard (like InputMethodManager.hideSoftInputFromWindow)
     FocusScope.of(context).unfocus();
 
-    // Stop if inputs are invalid
+    // Trigger validators on all fields in the Form; abort if any invalid
     if (!_formKey.currentState!.validate()) return;
 
-    // Show spinner and reset error
+    // Set "loading" state and clear previous error; triggers a rebuild (like setState in Android)
     setState(() {
       _loading = true;
       _error = null;
     });
 
     try {
-      // Firebase authentication instance
+      // Get FirebaseAuth singleton (like FirebaseAuth.getInstance() in Java)
       final auth = FirebaseAuth.instance;
 
       if (_mode == AuthMode.signIn) {
-        // Try signing in
+        // ---------- SIGN IN flow ----------
         await auth.signInWithEmailAndPassword(
           email: _email.text.trim(),
           password: _password.text,
         );
-        _snack('Signed in');
-        // Go to home page if successful
-        if (mounted) Navigator.of(context).pushReplacementNamed('/home');
+        _snack('Signed in'); // Toast/Snackbar equivalent
+        if (mounted) Navigator.of(context).pushReplacementNamed('/home'); // startActivity + finish()
+
       } else if (_mode == AuthMode.signUp) {
-        // Try creating a new account
-        await auth.createUserWithEmailAndPassword(
+        // ---------- SIGN UP flow ----------
+        final cred = await auth.createUserWithEmailAndPassword(
           email: _email.text.trim(),
           password: _password.text,
         );
+
+        // After account creation, set the Firebase user's displayName (profile) like:
+        // FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        // user.updateProfile(new UserProfileChangeRequest.Builder().setDisplayName(...).build());
+        final fullName = _fullNameController.text.trim();
+        await cred.user!.updateDisplayName(fullName);
+        await cred.user!.reload(); // refresh cached user info
+
         _snack('Account created');
-        // Go to home page if successful
         if (mounted) Navigator.of(context).pushReplacementNamed('/home');
+
       } else {
-        // Send a password reset email
+        // ---------- RESET PASSWORD flow ----------
         await auth.sendPasswordResetEmail(email: _email.text.trim());
         _snack('Password reset email sent');
-        // Switch back to sign in screen
+        // Return to Sign In screen state
         setState(() => _mode = AuthMode.signIn);
       }
+
     } on FirebaseAuthException catch (e) {
-      // Show Firebase error
+      // Firebase-specific error (e.g., wrong-password, user-not-found)
       setState(() => _error = e.message ?? 'Authentication error');
     } catch (_) {
-      // Show generic error
+      // Generic catch-all (like catching Exception in Java)
       setState(() => _error = 'Something went wrong');
     } finally {
-      // Stop spinner
+      // Always clear loading flag (finally runs even if exception thrown)
       if (mounted) setState(() => _loading = false);
     }
   }
 
-  // Show a small popup message at the bottom
+  // Convenience: show a Snackbar (Android Toast-like, but material)
   void _snack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
   Widget build(BuildContext context) {
-    // Flags for which mode we are in
+    // Booleans derived from the enum (like if(mode == SIGN_UP) in Java)
     final isSignIn = _mode == AuthMode.signIn;
     final isSignUp = _mode == AuthMode.signUp;
-    final isReset = _mode == AuthMode.reset;
+    final isReset  = _mode == AuthMode.reset;
 
+    // Scaffold = top-level screen structure (like an Activity with AppBar + content)
     return Scaffold(
       appBar: AppBar(title: const Text('Welcome')),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
+          constraints: const BoxConstraints(maxWidth: 420), // keep card narrow on large screens
           child: Card(
             margin: const EdgeInsets.all(16),
-            elevation: 3,
+            elevation: 3, // drop shadow
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Form(
-                key: _formKey,
+                key: _formKey, // hook validators
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.min, // wrap content vertically
                   children: [
-                    // Show error message if present
+                    // ---- Error banner (shows server-side/auth errors) ----
                     if (_error != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Text(
-                          _error!,
-                          style: const TextStyle(color: Colors.red),
+                          _error!, // non-null because guarded by if
+                          style: const TextStyle(color: Colors.blue),
                         ),
                       ),
 
-                    // Email field
+                    // ---- Full name field (only for sign-up) ----
+                    if (isSignUp) ...[
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _fullNameController,
+                        textInputAction: TextInputAction.next, // move focus to next field on "next"
+                        decoration: const InputDecoration(
+                          labelText: 'Full name',
+                          prefixIcon: Icon(Icons.person),
+                        ),
+                        autofillHints: const [AutofillHints.name], // OS autofill hint
+                        validator: (value) {
+                          if (!isSignUp) return null;     // no check in other modes
+                          final v = value?.trim() ?? '';
+                          if (v.isEmpty) return 'Please enter your full name';
+                          if (v.length < 2) return 'Name looks too short';
+                          return null;
+                        },
+                      ),
+                    ],
+
+                    // ---- Email field ----
                     TextFormField(
                       controller: _email,
                       decoration: const InputDecoration(
                         labelText: 'Email',
                         prefixIcon: Icon(Icons.email),
                       ),
-                      keyboardType: TextInputType.emailAddress,
-                      autofillHints: const [AutofillHints.email],
-                      validator: _validateEmail,
+                      keyboardType: TextInputType.emailAddress,   // email keyboard
+                      autofillHints: const [AutofillHints.email], // OS autofill hint
+                      validator: _validateEmail,                  // call our validator
                     ),
 
-                    // Password field (hidden in reset mode)
+                    // ---- Password field (hidden during reset mode) ----
                     if (!isReset) ...[
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _password,
-                        obscureText: true,
+                        obscureText: true, // password dots
                         decoration: const InputDecoration(
                           labelText: 'Password',
                           prefixIcon: Icon(Icons.lock),
@@ -185,7 +217,7 @@ class _AuthPageState extends State<AuthPage> {
                       ),
                     ],
 
-                    // Confirm password (only in sign up mode)
+                    // ---- Confirm password (sign-up only) ----
                     if (isSignUp) ...[
                       const SizedBox(height: 12),
                       TextFormField(
@@ -201,11 +233,11 @@ class _AuthPageState extends State<AuthPage> {
 
                     const SizedBox(height: 20),
 
-                    // Main button: Sign In / Sign Up / Reset
+                    // ---- Primary action button: Sign In / Sign Up / Reset ----
                     SizedBox(
-                      width: double.infinity,
+                      width: double.infinity, // stretch button to full width
                       child: FilledButton(
-                        onPressed: _loading ? null : _submit,
+                        onPressed: _loading ? null : _submit, // disable while loading
                         child: _loading
                             ? const SizedBox(
                           height: 20,
@@ -224,10 +256,11 @@ class _AuthPageState extends State<AuthPage> {
 
                     const SizedBox(height: 12),
 
-                    // Links to switch between Sign In / Sign Up / Reset
+                    // ---- Footer links (toggle modes) ----
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        // Toggle between Sign In and Sign Up
                         if (!isReset)
                           TextButton(
                             onPressed: _loading
@@ -241,6 +274,8 @@ class _AuthPageState extends State<AuthPage> {
                             ),
                           ),
                         if (!isReset) const SizedBox(width: 8),
+
+                        // Go to Reset Password mode
                         if (!isReset)
                           TextButton(
                             onPressed: _loading
@@ -248,6 +283,8 @@ class _AuthPageState extends State<AuthPage> {
                                 : () => setState(() => _mode = AuthMode.reset),
                             child: const Text('Forgot password?'),
                           ),
+
+                        // From Reset back to Sign In
                         if (isReset)
                           TextButton(
                             onPressed: _loading

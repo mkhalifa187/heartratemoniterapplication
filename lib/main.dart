@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // <-- added
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // add this
-
-import 'firebase_options.dart';   // <-- must be here
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'info_page.dart';
+import 'firebase_options.dart';
 import 'auth_page.dart';
 import 'home_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-// ===== SINGLE main() =====
+// 🔆 A single place to hold the current ThemeMode
+final ValueNotifier<ThemeMode> themeMode = ValueNotifier(ThemeMode.light);
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load .env before Firebase init
-  await dotenv.load(fileName: ".env"); // <-- added
+  await dotenv.load(fileName: ".env");
 
-  // Guard so hot restart / re-entry or other files importing this don't double-init
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -24,7 +26,6 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-// ===== APP ROOT =====
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -33,12 +34,36 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Heart Monitor Auth',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal, brightness: Brightness.light),
+        // ✅ Apply Gideon Roman across the app
+        textTheme: GoogleFonts.gideonRomanTextTheme(
+          Theme.of(context).textTheme.apply(
+            fontSizeFactor: 1.2, // 👈 makes all text 20% bigger
+          ),
+
+        ),
       ),
-      home: const AuthPage(), // start on the auth screen
+
+
+
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal, brightness: Brightness.dark),
+        // ✅ Apply Gideon Roman for dark mode too
+        textTheme: GoogleFonts.gideonRomanTextTheme(
+
+          Theme.of(context).textTheme.apply(
+            fontSizeFactor: 1.2, // 👈 same for dark mode
+          ),
+
+        ),
+      ),
+      themeMode: ThemeMode.light, // or ThemeMode.system / use your ValueNotifier later
+      home: const AuthPage(),
       routes: {
         '/home': (_) => const HomePage(),
+        '/info': (_) => const InfoPage(),
       },
       debugShowCheckedModeBanner: false,
     );
